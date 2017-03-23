@@ -1,0 +1,11 @@
+[package]
+name = "moka_runner"
+version = "0.1.0"
+authors = ["Louis Capitanchik <contact@louiscap.co>"]
+
+[dependencies]
+js = { git = "https://github.com/servo/rust-mozjs.git", features = ['promises'] }
+libc = "*"
+byteorder = "1"
+term-painter = "0.2.3"
+docopt = "0.7.0"
