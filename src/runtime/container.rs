@@ -12,12 +12,14 @@ use libc::c_char;
 
 use interop::static_to_char_ptr;
 use runtime::create_global;
+use runtime::errors::print_pending_exception_with_snippet;
 
 pub struct Container {
     pub runtime: Runtime,
     pub context: *mut JSContext,
     pub global: *mut JSObject,
     pub root: HandleObject,
+    compartment: JSAutoCompartment,
 }
 
 impl Container {
@@ -26,12 +28,14 @@ impl Container {
         let context = runtime.cx();
         let global = create_global(context);
         rooted!(in(context) let root = global);
+        let _ac = JSAutoCompartment::new(context, root.get());
 
         Container {
             runtime: runtime,
             context: context,
             global: global,
             root: root.handle(),
+            compartment: _ac,
         }
     }
 
@@ -49,9 +53,14 @@ impl Container {
 
     pub fn exec(&self, root: HandleObject, script: &str, filename: &str) -> Result<(), ()> {
         rooted!(in(self.context) let mut rval = UndefinedValue());
-//        rooted!(in(self.context) let rooted = self.global);
-        let r = self.runtime.evaluate_script(root, script, filename, 0, rval.handle_mut());
+        self.runtime.evaluate_script(root, script, filename, 0, rval.handle_mut())
+    }
 
-        r
+    /// A self contained execution that will automatically print errors
+    pub fn exec_c(&self, root: HandleObject, script: &str, filename: &str) {
+        match self.exec(root, script, filename) {
+            Ok(_) => (),
+            Err(_) => print_pending_exception_with_snippet(self.context, script),
+        }
     }
 }

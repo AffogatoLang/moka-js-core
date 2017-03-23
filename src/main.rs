@@ -7,14 +7,12 @@ extern crate moka_runner;
 use js::jsapi::CallArgs;
 use js::jsapi::JSContext;
 use js::jsapi::JS_EncodeStringToUTF8;
-use js::jsapi::JSAutoCompartment;
 use js::jsapi::JS_ReportError;
 use js::jsapi::Value;
 use js::jsval::{ UndefinedValue };
 
 use moka_runner::util;
 use moka_runner::interop::{ static_to_char_ptr };
-use moka_runner::runtime::errors::print_pending_exception_with_snippet;
 use moka_runner::runtime::Container;
 
 use std::ffi::CStr;
@@ -40,14 +38,9 @@ fn main() {
     let container = Container::new();
     rooted!(in(container.context) let rooted = container.global);
     let root_handle = rooted.handle();
-    let _ac = JSAutoCompartment::new(container.context, rooted.get());
 
     container.declare_global(root_handle, "log\0", Some(puts), 1);
-
-    match container.exec(root_handle, contents, name.as_str()) {
-        Ok(_) => (),
-        Err(_) => print_pending_exception_with_snippet(container.context, contents)
-    }
+    container.exec_c(root_handle, contents, name.as_str())
 }
 
 unsafe extern "C" fn puts(context: *mut JSContext, argc: u32, vp: *mut Value) -> bool {

@@ -1,8 +1,8 @@
-use std::path::{Path, PathBuf};
-use std::env;
-use std::io::prelude::*;
 use std::io;
+use std::io::prelude::*;
 use std::fs;
+use std::path::{ Path };
+
 use interop::osstr_to_string;
 
 pub fn read_as_file(path: &Path) -> io::Result<(String, String)> {

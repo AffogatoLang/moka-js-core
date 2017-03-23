@@ -8,7 +8,6 @@ use js::jsapi::{
     JS_ErrorFromException
 };
 
-use interop::{ char_ptr_to_str_or, null_term_ptr_to_string };
 use runtime::errors::WrappedError;
 
 use term_painter::ToStyle;
