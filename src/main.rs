@@ -4,20 +4,13 @@ extern crate libc;
 extern crate docopt;
 extern crate moka_runner;
 
-use js::jsapi::CallArgs;
-use js::jsapi::JSContext;
-use js::jsapi::JS_EncodeStringToUTF8;
-use js::jsapi::JS_ReportError;
-use js::jsapi::Value;
-use js::jsval::{ UndefinedValue };
-
 use moka_runner::util;
-use moka_runner::interop::{ static_to_char_ptr };
 use moka_runner::runtime::Container;
 
-use std::ffi::CStr;
 use std::str;
 use std::path::Path;
+
+use moka_runner::runtime::library::std::console;
 
 use docopt::Docopt;
 
@@ -39,25 +32,6 @@ fn main() {
     rooted!(in(container.context) let rooted = container.global);
     let root_handle = rooted.handle();
 
-    container.declare_global(root_handle, "log\0", Some(puts), 1);
+    container.declare_global_fn(root_handle, "log\0", Some(console::log), 1);
     container.exec_c(root_handle, contents, name.as_str())
-}
-
-unsafe extern "C" fn puts(context: *mut JSContext, argc: u32, vp: *mut Value) -> bool {
-    let args = CallArgs::from_vp(vp, argc);
-
-    if args._base.argc_ != 1 {
-        JS_ReportError(context, static_to_char_ptr("log requires exactly 1 argument\0"));
-        return false;
-    }
-
-    let arg = args.get(0);
-    let js = js::rust::ToString(context, arg);
-    rooted!(in(context) let message_root = js);
-    let message = JS_EncodeStringToUTF8(context, message_root.handle());
-    let message = CStr::from_ptr(message);
-    println!("{}", str::from_utf8(message.to_bytes()).unwrap());
-
-    args.rval().set(UndefinedValue());
-    return true;
 }

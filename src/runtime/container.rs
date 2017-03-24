@@ -8,7 +8,6 @@ use js::jsval::UndefinedValue;
 use js::rust::Runtime;
 
 use libc::c_uint;
-use libc::c_char;
 
 use interop::static_to_char_ptr;
 use runtime::create_global;
@@ -39,15 +38,9 @@ impl Container {
         }
     }
 
-
-    pub fn declare_global(&self, root: HandleObject, name: &'static str, func: JSNative, params: c_uint) {
+    pub fn declare_global_fn(&self, root: HandleObject, name: &'static str, func: JSNative, params: c_uint) {
         unsafe {
             JS_DefineFunction(self.context, root, static_to_char_ptr(name), func, params, 0);
-        }
-    }
-    pub fn declare_global_a(&self, root: HandleObject, name: &[u8], func: JSNative, params: c_uint) {
-        unsafe {
-            JS_DefineFunction(self.context, root, name.as_ptr() as *const c_char, func, params, 0);
         }
     }
 

@@ -1,4 +1,4 @@
-mod library;
+pub mod library;
 mod container;
 
 pub mod errors;
